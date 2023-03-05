@@ -21,7 +21,7 @@ class FunSetSuite extends munit.FunSuite:
    * Instead of copy-pasting the code for creating the set into every test, we can
    * store it in the test class using a val:
    *
-   *   val s1 = singletonSet(1)
+   * val s1 = singletonSet(1)
    *
    * However, what happens if the method "singletonSet" has a bug and crashes? Then
    * the test methods are not even executed, because creating an instance of the
@@ -45,8 +45,8 @@ class FunSetSuite extends munit.FunSuite:
    * .ignore annotation.
    */
 
-    test("singleton set one contains one".ignore) {
-    
+  test("singleton set one contains one") {
+
     /**
      * We create a new instance of the "TestSets" trait, this gives us access
      * to the values "s1" to "s3".
@@ -67,7 +67,60 @@ class FunSetSuite extends munit.FunSuite:
       assert(!contains(s, 3), "Union 3")
   }
 
+  test("intersect contains elements within both sets") {
+    new TestSets {
+      val s = union(s1, s2)
+      val i = intersect(s, s1)
+      assert(contains(i, 1), "Intersect 1")
+      assert(!contains(i, 2), "Intersect 2")
+      assert(!contains(i, 3), "Intersect 3")
+    }
+  }
 
+  test("filter of {1,3,4,5,7,1000} for _ < 5") {
+    new TestSets {
+      assert(contains(filter(fromListToSet(List(1, 3, 4, 5, 7, 1000)), _ < 5), 1))
+    }
+  }
+
+  test("forall returns true for predicate true") {
+    new TestSets {
+      val setWithOnlyOdds = union(s1, s3)
+      val setWithEvens = union(s1, s2)
+      assert(forall(setWithOnlyOdds, _ > 0))
+      assert(!forall(setWithEvens, _ > 3))
+    }
+  }
+
+  test("diff of {1,3,4,5,7,1000} and {1,2,3,4}") {
+    new TestSets {
+      val firstSet = fromListToSet(List(1,3,4,5,7,1000))
+      val secondSet = fromListToSet(List(1,2,3,4))
+      val result = fromListToSet(List(5,7,1000))
+      assert(FunSets.toString(diff(firstSet, secondSet)) == FunSets.toString(result))
+    }
+  }
+
+  test("exists returns true for predicate true") {
+    new TestSets {
+      val setWithOnlyOdds = union(s1, s3)
+      val setWithEvensAndOdds = union(s1, s2)
+      assert(exists(setWithOnlyOdds, _ - 1 == 2))
+      assert(exists(setWithEvensAndOdds, _ - 1 == 1))
+      assert(!exists(s2, _ > 3))
+    }
+  }
+
+  test("map applies function over all elements") {
+    new TestSets {
+      val s = union(s1, union(s2, s3))
+      val mappedSet = map(s, _ + 1)
+      assert(contains(mappedSet, 2))
+      assert(contains(mappedSet, 3))
+      assert(contains(mappedSet, 4))
+    }
+  }
 
   import scala.concurrent.duration.*
+
   override val munitTimeout = 10.seconds
